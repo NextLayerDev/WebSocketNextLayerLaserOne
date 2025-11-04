@@ -14,12 +14,6 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
   : ['http://localhost:3000', 'http://localhost:3001']
 
-interface UserSocket {
-  socketId: string
-  userId: string
-  timestamp: Date
-}
-
 // Criar servidor HTTP
 const httpServer = createServer((req, res) => {
   // Health check endpoint
@@ -77,17 +71,17 @@ const io = new Server(httpServer, {
 })
 
 // Mapa de usuários online: userId -> socketId
-const usuariosOnline = new Map<string, UserSocket>()
+const usuariosOnline = new Map()
 
 // Tornar io acessível globalmente (caso precise ser usado externamente)
-;(global as any).io = io
+global.io = io
 
 // Eventos do Socket.io
 io.on('connection', (socket) => {
   console.log('🔌 Cliente conectado:', socket.id, '| IP:', socket.handshake.address)
 
   // Usuário entra no chat
-  socket.on('user:join', (userId: string) => {
+  socket.on('user:join', (userId) => {
     if (!userId) {
       console.warn('⚠️ Tentativa de join sem userId:', socket.id)
       return
@@ -121,7 +115,7 @@ io.on('connection', (socket) => {
   })
 
   // Eventos do Omni WhatsApp
-  socket.on('omni:join', (userId: string) => {
+  socket.on('omni:join', (userId) => {
     if (!userId) return
     socket.join('omni-updates')
     socket.join(`omni-user:${userId}`)
@@ -129,14 +123,7 @@ io.on('connection', (socket) => {
   })
 
   // Nova mensagem enviada
-  socket.on('message:send', (data: {
-    id: string
-    remetenteId: string
-    destinatarioId: string
-    conteudo: string
-    createdAt: string
-    lida: boolean
-  }) => {
+  socket.on('message:send', (data) => {
     // Enviar para o remetente (confirmação)
     socket.emit('message:received', data)
 
@@ -145,14 +132,14 @@ io.on('connection', (socket) => {
   })
 
   // Usuário digitando
-  socket.on('typing:start', (data: { userId: string; destinatarioId: string }) => {
+  socket.on('typing:start', (data) => {
     io.to(`user:${data.destinatarioId}`).emit('typing:update', {
       userId: data.userId,
       isTyping: true,
     })
   })
 
-  socket.on('typing:stop', (data: { userId: string; destinatarioId: string }) => {
+  socket.on('typing:stop', (data) => {
     io.to(`user:${data.destinatarioId}`).emit('typing:update', {
       userId: data.userId,
       isTyping: false,
@@ -160,7 +147,7 @@ io.on('connection', (socket) => {
   })
 
   // Atualização de status manual
-  socket.on('status:change', (data: { userId: string; status: string }) => {
+  socket.on('status:change', (data) => {
     io.emit('status:update', {
       userId: data.userId,
       status: data.status,
@@ -169,31 +156,21 @@ io.on('connection', (socket) => {
   })
 
   // Marcar mensagens como lidas
-  socket.on('messages:mark-read', (data: {
-    remetenteId: string
-    destinatarioId: string
-  }) => {
+  socket.on('messages:mark-read', (data) => {
     io.to(`user:${data.remetenteId}`).emit('messages:read', {
       userId: data.destinatarioId,
     })
   })
 
   // Evento genérico para emitir para salas específicas (útil para integração)
-  socket.on('emit:to-room', (data: {
-    room: string
-    event: string
-    payload: any
-  }) => {
+  socket.on('emit:to-room', (data) => {
     if (data.room && data.event) {
       io.to(data.room).emit(data.event, data.payload)
     }
   })
 
   // Evento genérico para broadcast
-  socket.on('emit:broadcast', (data: {
-    event: string
-    payload: any
-  }) => {
+  socket.on('emit:broadcast', (data) => {
     if (data.event) {
       io.emit(data.event, data.payload)
     }
@@ -202,7 +179,7 @@ io.on('connection', (socket) => {
   // Desconexão
   socket.on('disconnect', (reason) => {
     // Encontrar userId pelo socketId
-    let disconnectedUserId: string | null = null
+    let disconnectedUserId = null
     
     for (const [userId, userSocket] of usuariosOnline.entries()) {
       if (userSocket.socketId === socket.id) {

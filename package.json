@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "Servidor WebSocket standalone para o sistema Porteira",
   "type": "module",
-  "main": "websocket-server.ts",
+  "main": "server.js",
   "scripts": {
-    "dev": "tsx watch websocket-server.ts",
-    "start": "NODE_ENV=production tsx websocket-server.ts",
-    "build": "tsx websocket-server.ts"
+    "dev": "node --watch server.js",
+    "start": "node server.js",
+    "build": "node server.js"
   },
   "keywords": [
     "websocket",
@@ -21,11 +21,6 @@
   },
   "optionalDependencies": {
     "dotenv": "^16.4.5"
-  },
-  "devDependencies": {
-    "@types/node": "^20.17.57",
-    "tsx": "^4.19.4",
-    "typescript": "^5.8.3"
   }
 }
 
