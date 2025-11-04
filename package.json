@@ -1,0 +1,31 @@
+{
+  "name": "websocket-server",
+  "version": "1.0.0",
+  "description": "Servidor WebSocket standalone para o sistema Porteira",
+  "type": "module",
+  "main": "websocket-server.ts",
+  "scripts": {
+    "dev": "tsx watch websocket-server.ts",
+    "start": "NODE_ENV=production tsx websocket-server.ts",
+    "build": "tsx websocket-server.ts"
+  },
+  "keywords": [
+    "websocket",
+    "socket.io",
+    "realtime"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "socket.io": "^4.8.1"
+  },
+  "optionalDependencies": {
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.57",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}
+
