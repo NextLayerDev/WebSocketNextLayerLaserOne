@@ -78,9 +78,9 @@ io.on('connection', (socket) => {
 server.listen(port, hostname, () => {
   console.log(`
 ╔══════════════════════════════════════════════╗
-║ 🚀 Servidor WebSocket + HTTP rodando         ║
-║ 🌍 Host: ${hostname}:${port}                 
-║ 🔌 Socket.io: Ativo                          
+║ 🚀 Servidor WebSocket + HTTP rodando          ║
+║ 🌍 Host: ${hostname}:${port}
+║ 🔌 Socket.io: Ativo
 ║ 🌐 Origens permitidas: ${allowedOrigins.join(', ')} 
 ╚══════════════════════════════════════════════╝
   `)
