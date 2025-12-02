@@ -180,6 +180,49 @@ io.on('connection', (socket) => {
     socket.leave(`omni-user:${userId}`)
   })
 
+  // ============================
+  // SALAS DE PEDIDOS (GESTÃO DE VENDAS)
+  // ============================
+
+  // Sala global de pedidos (tela de lista/gestão de vendas)
+  socket.on('pedidos:join', () => {
+    socket.join('pedidos')
+    console.log(`🧾 Socket ${socket.id} entrou na sala global de pedidos`)
+  })
+
+  socket.on('pedidos:leave', () => {
+    socket.leave('pedidos')
+    console.log(`🧾 Socket ${socket.id} saiu da sala global de pedidos`)
+  })
+
+  // Sala específica de um pedido (tela de detalhes do pedido)
+  socket.on('pedido:join', (data) => {
+    if (!data || !data.pedidoId) return
+    const room = `pedido:${data.pedidoId}`
+    socket.join(room)
+    console.log(`📄 Socket ${socket.id} entrou na sala do pedido ${data.pedidoId}`)
+  })
+
+  socket.on('pedido:leave', (data) => {
+    if (!data || !data.pedidoId) return
+    const room = `pedido:${data.pedidoId}`
+    socket.leave(room)
+    console.log(`📄 Socket ${socket.id} saiu da sala do pedido ${data.pedidoId}`)
+  })
+
+  // Evento de "digitando" em um pedido (edição em tempo real)
+  socket.on('pedido:typing', (data) => {
+    if (!data || !data.pedidoId) return
+
+    const room = `pedido:${data.pedidoId}`
+
+    // Notificar quem está na tela do pedido específico
+    io.to(room).emit('pedido:typing', data)
+
+    // Opcional: também avisar quem está na lista de pedidos
+    io.to('pedidos').emit('pedido:typing', data)
+  })
+
   socket.on('disconnect', (reason) => {
     let disconnectedUserId = null
 
@@ -230,14 +273,15 @@ httpServer.listen(port, () => {
 ╔════════════════════════════════════════════════════════════╗
 ║  🚀 Servidor WebSocket Standalone                          ║
 ║                                                            ║
-║  📍 Porta: ${port}
+║  📍 Porta: ${port}                                            
 ║  🔌 Socket.io: Ativo                                       ║
-║  🌍 Ambiente: ${dev ? 'Desenvolvimento' : 'Produção'}
-║  🌐 Origens: ${allowedOrigins.slice(0, 2).join(', ')}
-║  📊 Conexões ativas: ${usuariosOnline.size}
+║  🌍 Ambiente: ${dev ? 'Desenvolvimento' : 'Produção'}             
+║  🌐 Origens: ${allowedOrigins.slice(0, 2).join(', ')}           
+║  📊 Conexões ativas: ${usuariosOnline.size}                      
 ║                                                            ║
 ║  ✅ Chat Interno: Ativo                                    ║
 ║  ✅ Omni WhatsApp: Ativo                                   ║
+║  ✅ Pedidos : Ativo                                   ║                                   
 ║  ✅ Endpoint /emit: Ativo                                  ║
 ╚════════════════════════════════════════════════════════════╝
   `)
